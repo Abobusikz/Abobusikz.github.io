@@ -1,21 +1,36 @@
-document.addEventListener("DOMContentLoaded",
-  function (event) {
-    document.querySelector("button").addEventListener("click", function () {
-        $ajaxUtils.sendGetRequest("data/name.json", 
-            function (res) {
-              var message = res.firstName + " " + res.lastName;
-              if (res.likesChineseFood) {
-                message += " likes Chinese food";
-              }else {
-                message += " doesn't like Chinese food";
-              }
-              message += " and uses ";
-              message += res.numberOfDisplays + 1;
-              message += " displays for coding.";
-              document.querySelector("#content").innerHTML = "<h2>" + message + "!</h2>";
-              // console.log(message);
-            });
-           
-      });
-  }
-);
+var contentElement = document.getElementById("content");
+
+var pages = {
+    home: { content: "Home Page", url: "#home" },
+    about: { content: "About Page", url: "#about" },
+    contacts: { content: "Contact Page", url: "#contacts" }
+};
+
+function handleClick(event) {
+    var url = event.target.getAttribute("href");
+    // получаем имя страницы, которая совпадает с адресом перехода
+    var pageName = url.split("#").pop();
+    var page = pages[pageName];
+    if (history.state.url != url) {
+        contentElement.textContent = page.content;
+        history.pushState(page, // объект state      
+        event.target.textContent, // Title      
+        event.target.href // URL    
+        );
+        document.title = event.target.textContent; // если браузер не устанавливает заголовок
+    }
+    return event.preventDefault();
+}
+
+window.addEventListener("popstate", function (event) {
+    if (event.state) // если  есть состояние 
+        contentElement.textContent = event.state.content; // получаем старое состояние
+});
+
+var links = document.getElementsByTagName("a");
+for (var i = 0; i < links.length; i++) {
+    links[i].addEventListener("click", handleClick, true);
+}
+
+contentElement.textContent = pages.home.content;
+history.pushState(pages.home, "Home", pages.home.url);
